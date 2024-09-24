@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">in_memory_ss_trial</string>
+    <string name="accessibility_service_description">This service is required for the Auto Clicker to function.</string>
+</resources>
