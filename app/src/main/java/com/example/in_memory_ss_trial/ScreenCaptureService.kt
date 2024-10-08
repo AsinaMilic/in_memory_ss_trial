@@ -60,9 +60,12 @@ class ScreenCaptureService : Service() {
     private fun startCapture(resultCode: Int, data: Intent) {
         val mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
         mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, data)
-
         mediaProjection?.registerCallback(mediaProjectionCallback, null)
 
+        setupVirtualDisplay()
+    }
+
+    private fun setupVirtualDisplay() {
         val metrics = DisplayMetrics()
         val windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         windowManager.defaultDisplay.getMetrics(metrics)
@@ -98,7 +101,6 @@ class ScreenCaptureService : Service() {
                     try {
                         Log.d("ScreenCaptureService", "Emitting bitmap")
                         _capturedBitmaps.emit(bitmap)
-                        Log.d("ScreenCaptureService", "Bitmap emitted successfully")
                     } catch (e: Exception) {
                         Log.e("ScreenCaptureService", "Failed to emit bitmap", e)
                     }
@@ -118,13 +120,13 @@ class ScreenCaptureService : Service() {
         imageReader?.close()
         mediaProjection?.unregisterCallback(mediaProjectionCallback)
         mediaProjection?.stop()
+        mediaProjection = null
         stopForeground(true)
         stopSelf()
     }
 
     private fun createNotification(): Notification {
-        val channelId =
-            createNotificationChannel("screen_capture", "Screen Capture Service")
+        val channelId = createNotificationChannel("screen_capture", "Screen Capture Service")
 
         return NotificationCompat.Builder(this, channelId)
             .setContentTitle("Screen Capture")
@@ -140,7 +142,6 @@ class ScreenCaptureService : Service() {
         return channelId
     }
 
-    // Binder to allow the activity to interact with the service
     inner class ScreenCaptureBinder : Binder() {
         fun getService(): ScreenCaptureService = this@ScreenCaptureService
     }
